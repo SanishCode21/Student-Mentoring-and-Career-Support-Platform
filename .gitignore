@@ -4,6 +4,8 @@ myvenv/
 
 dist/
 
+# Python script-generated review backup files
+*.review-backup
 
 .env/
 .env

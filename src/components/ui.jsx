@@ -430,43 +430,6 @@ export function DataTable({ columns, rows, rowKey, empty, onRowClick, mobileTitl
   );
 }
 
-/* ------------------------------------------------------------------ ratings */
-
-export function Stars({ value = 0, count, showValue = true }) {
-  const rounded = Math.round(Number(value) || 0);
-  return (
-    <span className="d-inline-flex align-items-center gap-1">
-      <span aria-hidden="true" className="text-warning" style={{ letterSpacing: '0.05em' }}>
-        {'★'.repeat(Math.max(0, rounded))}{'☆'.repeat(Math.max(0, 5 - rounded))}
-      </span>
-      {showValue && <span className="fw-semibold small">{Number(value).toFixed(1)}</span>}
-      {count != null && <span className="text-muted small">({count})</span>}
-    </span>
-  );
-}
-
-export function RatingInput({ value, onChange, name = 'rating' }) {
-  return (
-    <div className="d-flex align-items-center gap-1" role="radiogroup" aria-label="Rating">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          role="radio"
-          aria-checked={value === star}
-          aria-label={`${star} star${star === 1 ? '' : 's'}`}
-          className={`rating-star ${star <= value ? 'on' : ''}`}
-          onClick={() => onChange(star)}
-        >
-          ★
-        </button>
-      ))}
-      <input type="hidden" name={name} value={value} readOnly />
-      <span className="ms-2 small text-muted">{value ? `${value} / 5` : 'Select a rating'}</span>
-    </div>
-  );
-}
-
 /* ------------------------------------------------------------------ forms */
 
 /** Map ApiError.details onto react-hook-form fields. */

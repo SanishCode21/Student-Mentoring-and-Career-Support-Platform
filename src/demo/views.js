@@ -12,10 +12,9 @@ export function createViews(store) {
   const slot = (row) => ({ ...row, booked: d().sessions.some((session) => session.slot_id === row.slot_id && session.status === 'scheduled') });
   const openSlots = (id) => d().slots.filter((row) => row.mentor_id === id && row.is_available && row.start_time > store.now() && !slot(row).booked);
   const feedback = (row) => ({ ...row, submitted_by_name: name(row.submitted_by) });
-  const rating = (id) => {
+  const reviewCount = (id) => {
     const ids = d().sessions.filter((row) => row.mentor_id === id).map((row) => row.session_id);
-    const rows = d().feedback.filter((row) => ids.includes(row.session_id) && user(row.submitted_by)?.role === 'student');
-    return rows.length ? { average: Math.round(rows.reduce((sum, row) => sum + row.rating, 0) / rows.length * 100) / 100, count: rows.length } : null;
+    return d().feedback.filter((row) => ids.includes(row.session_id) && user(row.submitted_by)?.role === 'student' && row.comments?.trim()).length;
   };
   const studentProfile = (id) => {
     const row = student(id);
@@ -26,7 +25,7 @@ export function createViews(store) {
     if (!row) return null;
     const active = countActive(id);
     return { ...row, full_name: name(id), email: user(id)?.email,
-      expertise: skillRows(row.expertise), interests: interestRows(row.interest_ids), rating: rating(id),
+      expertise: skillRows(row.expertise), interests: interestRows(row.interest_ids), review_count: reviewCount(id),
       free_mentee_spots: Math.max(0, row.max_active_mentees - active), active_mentees: active,
       open_slots_14d: openSlots(id).filter((item) => Date.parse(item.start_time) <= Date.parse(store.now()) + 14 * 86400000).length,
       accepting_mentees: row.is_available && active < row.max_active_mentees && user(id)?.account_status === 'active',
@@ -69,9 +68,9 @@ export function createViews(store) {
     active_mentees: countActive(viewer.user_id), max_active_mentees: mentor(viewer.user_id)?.max_active_mentees || 3,
     upcoming_sessions: d().sessions.filter((row) => row.mentor_id === viewer.user_id && row.status === 'scheduled' && row.scheduled_start > store.now())
       .sort((a, b) => a.scheduled_start.localeCompare(b.scheduled_start)).slice(0, 5).map((row) => session(row, viewer)),
-    rating_summary: rating(viewer.user_id), unread_notifications: unread(viewer.user_id),
+    review_summary: { count: reviewCount(viewer.user_id) }, unread_notifications: unread(viewer.user_id),
   });
-  return { user, name, student, mentor, countActive, own, slot, openSlots, feedback, rating,
+  return { user, name, student, mentor, countActive, own, slot, openSlots, feedback, reviewCount,
     studentProfile, mentorProfile, userRow, request, mentorship, session, notifications, unread, studentDashboard, mentorDashboard };
 }
 

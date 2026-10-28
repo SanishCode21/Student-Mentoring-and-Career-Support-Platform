@@ -213,9 +213,9 @@ export function AdminDashboard() {
         </Col>
         <Col sm={6} xl={3}>
           <StatCard
-            label="Average rating"
-            value={overview.loading ? '—' : (data?.feedback?.average_rating != null ? data.feedback.average_rating.toFixed(2) : '—')}
-            hint={data ? `${data.feedback.count} ratings in period` : '—'}
+            label="Written reviews"
+            value={overview.loading ? '—' : data?.feedback?.count ?? 0}
+            hint="Session reviews in this period"
           />
         </Col>
       </Row>
@@ -949,7 +949,7 @@ export function AdminMentors() {
                 <Col sm={6}><div className="small-label">Graduation year</div><div>{selected.graduation_year || 'Not stated'}</div></Col>
                 <Col sm={6}><div className="small-label">Capacity</div><div>{selected.max_active_mentees} mentees</div></Col>
                 <Col sm={6}><div className="small-label">Accepting requests</div><div>{selected.is_available ? 'Yes' : 'Paused'}</div></Col>
-                <Col sm={6}><div className="small-label">Rating</div><div>{selected.rating ? `${selected.rating.average.toFixed(1)} / 5 (${selected.rating.count})` : 'No ratings yet'}</div></Col>
+                <Col sm={6}><div className="small-label">Student reviews</div><div>{selected.review_count || 0} written session reviews</div></Col>
                 <Col sm={6}>
                   <div className="small-label">LinkedIn</div>
                   {selected.linkedin_url
@@ -1497,8 +1497,7 @@ export function AdminAnalytics() {
 
   const data = overview.data?.data;
   const series = trend.data?.data?.series || [];
-  const distribution = data?.feedback?.rating_distribution || {};
-  const distributionMax = Math.max(1, ...Object.values(distribution).map((value) => Number(value) || 0));
+  const recentReviews = data?.feedback?.recent_reviews || [];
   const noData = data
     && data.requests.total === 0
     && data.sessions.scheduled + data.sessions.completed + data.sessions.cancelled === 0
@@ -1568,9 +1567,9 @@ export function AdminAnalytics() {
         </Col>
         <Col sm={6} xl={3}>
           <StatCard
-            label="Average rating"
-            value={overview.loading ? '—' : (data?.feedback?.average_rating != null ? data.feedback.average_rating.toFixed(2) : '—')}
-            hint={data ? `${data.feedback.count} ratings` : '—'}
+            label="Written reviews"
+            value={overview.loading ? '—' : data?.feedback?.count ?? 0}
+            hint="Reviews submitted in the period"
           />
         </Col>
       </Row>
@@ -1579,7 +1578,7 @@ export function AdminAnalytics() {
         <Col xl={7}>
           <Panel
             title="Participation funnel"
-            subtitle="Requests through to rated sessions in the selected period."
+            subtitle="Requests through to reviewed sessions in the selected period."
           >
             {overview.loading && <Loading label="Loading funnel…" rows={4} />}
             {!overview.loading && !overview.error && (funnel.length === 0 || funnel[0].value === 0)
@@ -1587,28 +1586,20 @@ export function AdminAnalytics() {
               : <Funnel steps={funnel} />}
           </Panel>
 
-          <Panel title="Rating distribution" className="mt-3" subtitle="Feedback submitted in the selected period.">
-            {overview.loading && <Loading label="Loading ratings…" rows={3} />}
+          <Panel title="Student session reviews" className="mt-3" subtitle="Written student reflections help administrators follow mentoring progress in this local demo.">
+            {overview.loading && <Loading label="Loading reviews…" rows={3} />}
             {!overview.loading && !overview.error && (
-              Number(data?.feedback?.count || 0) === 0 ? (
-                <EmptyState icon="☆" title="No feedback in this period" />
-              ) : (
-                <div>
-                  {[5, 4, 3, 2, 1].map((rating) => {
-                    const count = Number(distribution[String(rating)] || 0);
-                    return (
-                      <div className="funnel-row" key={rating}>
-                        <div className="funnel-label">{rating} star{rating === 1 ? '' : 's'}</div>
-                        <div className="funnel-track">
-                          <div className="funnel-bar" style={{ width: `${Math.max(1, (count / distributionMax) * 100)}%` }} />
-                        </div>
-                        <div className="funnel-value">{suppress(count)}</div>
-                      </div>
-                    );
-                  })}
-                  <div className="small text-muted mt-2">Groups with fewer than five responses are shown as &lt;5.</div>
+              recentReviews.length === 0
+                ? <EmptyState icon="◇" title="No written student reviews in this period" />
+                : <div className="d-grid gap-3">
+                  {recentReviews.map((review) => (
+                    <div className="note-box" key={review.feedback_id}>
+                      <div className="fw-semibold">{review.student_name} · Mentor: {review.mentor_name}</div>
+                      <div className="small text-muted mb-2">Session: {review.session_date ? fmtDateTime(review.session_date) : 'Not recorded'}</div>
+                      <div className="small" style={{ whiteSpace: 'pre-wrap' }}>{review.comments}</div>
+                    </div>
+                  ))}
                 </div>
-              )
             )}
           </Panel>
         </Col>
@@ -1663,9 +1654,9 @@ export function AdminAnalytics() {
 
           <Panel title="Privacy" className="mt-3">
             <p className="small text-muted mb-0">
-              Analytics show aggregate counts. Groups smaller than five are suppressed, and no free-text feedback or
-              personal contact details appear in reports. Access is limited to administrators and every export is
-              audit-logged.
+              Analytics summary statistics are aggregate. Administrators can read the written student session reviews above
+              for mentoring follow-up. Free-text review content is not included in CSV exports. This is a local demo;
+              real deployment requires an approved privacy and access-control policy.
             </p>
           </Panel>
         </Col>

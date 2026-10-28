@@ -12,7 +12,7 @@ import { useAuth } from '../auth.jsx';
 import { useToast } from '../components/toast.jsx';
 import {
   ApiErrorBanner, Chip, DataTable, EmptyState, ErrorState, Loading, PageHeader, Pager, Panel,
-  STAGES, STAGE_LABEL, LEVELS, LEVEL_LABEL, Stars, StatusBadge, Tabs, StatCard, useApi, useTitle,
+  STAGES, STAGE_LABEL, LEVELS, LEVEL_LABEL, StatusBadge, Tabs, StatCard, useApi, useTitle,
   fmtDate, fmtDateTime, fmtTime, fmtDay, timeAgo, untilText, toDateInput, combineLocal, initials,
 } from '../components/ui.jsx';
 import {
@@ -869,13 +869,7 @@ export function MentorDetail() {
                   <Chip>{data.free_mentee_spots} mentee spot{data.free_mentee_spots === 1 ? '' : 's'} free</Chip>
                 </div>
               </div>
-              {data.rating ? (
-                <div className="text-end">
-                  <Stars value={data.rating.average} count={data.rating.count} />
-                </div>
-              ) : (
-                <span className="small text-muted">Not enough ratings yet</span>
-              )}
+              <span className="small text-muted">{data.review_count || 0} written session review{data.review_count === 1 ? '' : 's'}</span>
             </div>
 
             <hr />
@@ -1590,9 +1584,9 @@ export function MentorshipSessions() {
                       </>
                     )}
                     {canRate(session) && (
-                      <Button size="sm" variant="primary" onClick={() => setRateTarget(session)}>Rate session</Button>
+                      <Button size="sm" variant="primary" onClick={() => setRateTarget(session)}>Write review</Button>
                     )}
-                    {own && <Chip>Rated {own.rating}/5</Chip>}
+                    {own && <Chip>Review submitted</Chip>}
                     {session.status === 'completed' && session.my_feedback_submitted && !own && <Chip>Feedback submitted</Chip>}
                   </div>
                 </div>
@@ -1612,7 +1606,7 @@ export function MentorshipSessions() {
 
                 {own?.comments && (
                   <div className="note-box mt-2">
-                    <div className="small-label mb-1">Your feedback</div>
+                    <div className="small-label mb-1">Your review</div>
                     {own.comments}
                   </div>
                 )}
@@ -1644,7 +1638,7 @@ export function MentorshipSessions() {
         show={Boolean(rateTarget)}
         onHide={() => setRateTarget(null)}
         session={rateTarget}
-        onSubmitted={() => { toast.success('Thank you — your feedback was recorded.'); bundle.reload({ silent: true }); }}
+        onSubmitted={() => { toast.success('Thank you — your review was recorded.'); bundle.reload({ silent: true }); }}
       />
     </>
   );

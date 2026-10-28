@@ -151,9 +151,9 @@ export function MentorDashboard() {
         </Col>
         <Col sm={6} xl={3}>
           <StatCard
-            label="Average rating"
-            value={data?.rating_summary ? data.rating_summary.average.toFixed(1) : '—'}
-            hint={data?.rating_summary ? `${data.rating_summary.count} ratings` : 'Shown after 3 ratings'}
+            label="Student reviews"
+            value={data?.review_summary?.count ?? 0}
+            hint="Written reviews from completed sessions"
           />
         </Col>
       </Row>
@@ -239,21 +239,9 @@ export function MentorDashboard() {
             <Link to="/mentor/profile" className="btn btn-sm btn-outline-primary mt-3">Edit capacity in profile</Link>
           </Panel>
 
-          <Panel title="Reputation" className="mt-3">
-            {data?.rating_summary ? (
-              <>
-                <div className="d-flex align-items-baseline gap-2">
-                  <span className="stat-value">{data.rating_summary.average.toFixed(1)}</span>
-                  <span className="text-muted">/ 5</span>
-                </div>
-                <div className="small text-muted">{data.rating_summary.count} ratings from completed sessions</div>
-              </>
-            ) : (
-              <p className="text-muted small mb-0">
-                Ratings appear after at least three completed sessions have been rated. Feedback is visible to
-                you and to administrators.
-              </p>
-            )}
+          <Panel title="Student reviews" className="mt-3">
+            <div className="stat-value">{data?.review_summary?.count ?? 0}</div>
+            <p className="text-muted small mb-0">Written session reviews help students, mentors and administrators follow the mentoring journey.</p>
           </Panel>
         </Col>
       </Row>
@@ -856,9 +844,9 @@ export function Mentees() {
                                       </>
                                     )}
                                     {session.status === 'completed' && !session.my_feedback_submitted && (
-                                      <Button size="sm" variant="primary" onClick={() => setRateTarget(session)}>Rate</Button>
+                                      <Button size="sm" variant="primary" onClick={() => setRateTarget(session)}>Write review</Button>
                                     )}
-                                    {session.status === 'completed' && session.my_feedback_submitted && <Chip>Rated</Chip>}
+                                    {session.status === 'completed' && session.my_feedback_submitted && <Chip>Reviewed</Chip>}
                                   </div>
                                 </div>
                               </div>
@@ -913,7 +901,7 @@ export function Mentees() {
         show={Boolean(rateTarget)}
         onHide={() => setRateTarget(null)}
         session={rateTarget ? { ...rateTarget, student_name: detail?.student_name, mentor_name: detail?.mentor_name } : null}
-        onSubmitted={() => { toast.success('Feedback recorded.'); reloadAll(); }}
+        onSubmitted={() => { toast.success('Review recorded.'); reloadAll(); }}
       />
 
       <SessionEditDialog
@@ -1051,7 +1039,7 @@ export function MentorSchedule() {
                         <div className="d-flex gap-1 align-items-center">
                           <StatusBadge status={session.status} />
                           {session.status === 'completed' && !session.my_feedback_submitted && (
-                            <Button size="sm" variant="primary" onClick={() => setRateTarget(session)}>Rate</Button>
+                            <Button size="sm" variant="primary" onClick={() => setRateTarget(session)}>Write review</Button>
                           )}
                         </div>
                       </div>
@@ -1177,7 +1165,7 @@ export function MentorSchedule() {
         show={Boolean(rateTarget)}
         onHide={() => setRateTarget(null)}
         session={rateTarget}
-        onSubmitted={() => { toast.success('Feedback recorded.'); sessions.reload({ silent: true }); }}
+        onSubmitted={() => { toast.success('Review recorded.'); sessions.reload({ silent: true }); }}
       />
     </>
   );

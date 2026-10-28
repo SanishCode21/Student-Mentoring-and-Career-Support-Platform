@@ -85,7 +85,7 @@ export function createFixtures(clock = new Date()) {
     meeting_mode: 'online', meeting_link: 'https://example.invalid/demo-meeting', notes: 'Sample agenda: review a portfolio project and agree the next steps.',
     cancel_reason: row.status === 'cancelled' ? 'Sample cancellation.' : null, created_at: date(-5) }));
   const feedback = [{ feedback_id: 'feedback-demo', session_id: 'session-completed', submitted_by: 'student-demo',
-    rating: 5, comments: 'Sample feedback: the next steps were clear.', created_at: date(-2, 12) }];
+    comments: 'We reviewed my portfolio and identified two specific improvements for my project README. My next step is updating the documentation before our next session.', created_at: date(-2, 12) }];
   const notifications = [
     ['student-demo', 'Sample mentorship accepted', 'request_accepted', 'mentorship', 'mentorship-demo'],
     ['student-demo', 'Sample session scheduled', 'session_scheduled', 'session', 'session-upcoming'],

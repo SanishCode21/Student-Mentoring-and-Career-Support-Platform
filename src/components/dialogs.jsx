@@ -9,7 +9,7 @@ import Row from 'react-bootstrap/Row';
 import Spinner from 'react-bootstrap/Spinner';
 import { get, patch, post } from '../api.js';
 import {
-  Chip, EmptyState, ErrorState, Loading, RatingInput, StatusBadge, STAGE_LABEL,
+  Chip, EmptyState, ErrorState, Loading, StatusBadge, STAGE_LABEL,
   combineLocal, fmtDate, fmtDateTime, fmtTime, toDateInput, toTimeInput, useApi,
 } from './ui.jsx';
 
@@ -158,22 +158,21 @@ export function ConfirmDialog({
 /* ------------------------------------------------------------------ feedback */
 
 export function FeedbackDialog({ show, onHide, session, onSubmitted }) {
-  const [rating, setRating] = useState(0);
   const [comments, setComments] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (show) { setRating(0); setComments(''); setBusy(false); setError(null); }
+    if (show) { setComments(''); setBusy(false); setError(null); }
   }, [show]);
 
   const submit = async (event) => {
     event.preventDefault();
-    if (!rating) { setError({ message: 'Choose a rating from 1 to 5.' }); return; }
+    if (comments.trim().length < 10) { setError({ message: 'Please write at least 10 characters about the mentoring session.' }); return; }
     setBusy(true);
     setError(null);
     try {
-      const envelope = await post(`/sessions/${session.session_id}/feedback`, { rating, comments: comments.trim() || null });
+      const envelope = await post(`/sessions/${session.session_id}/feedback`, { comments: comments.trim() });
       onSubmitted?.(envelope.data);
       onHide();
     } catch (err) {
@@ -187,7 +186,7 @@ export function FeedbackDialog({ show, onHide, session, onSubmitted }) {
     <Modal show={show} onHide={busy ? undefined : onHide} centered>
       <Form onSubmit={submit}>
         <Modal.Header closeButton={!busy}>
-          <Modal.Title>Rate this session</Modal.Title>
+          <Modal.Title>Write a session review</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {session && (
@@ -197,26 +196,22 @@ export function FeedbackDialog({ show, onHide, session, onSubmitted }) {
             </div>
           )}
           {error && <Alert variant="danger" className="py-2 small">{error.message}</Alert>}
-          <Form.Group className="mb-3">
-            <Form.Label>How was the session?</Form.Label>
-            <RatingInput value={rating} onChange={setRating} />
-          </Form.Group>
           <Form.Group>
-            <Form.Label>Comments <span className="text-muted fw-normal">(optional)</span></Form.Label>
+            <Form.Label>Your written review <span className="text-muted fw-normal">(required)</span></Form.Label>
             <Form.Control
               as="textarea" rows={3} value={comments} maxLength={1000}
               onChange={(event) => setComments(event.target.value)}
-              placeholder="What went well? What could be better?"
+              placeholder="What guidance did you receive? What progress or next steps resulted from this session?"
             />
             <div className="char-count text-end">{comments.length} / 1000</div>
           </Form.Group>
-          <div className="policy-note mt-2">Feedback is visible to the other participant and to administrators.</div>
+          <div className="policy-note mt-2">Reviews are visible to the mentoring participants and programme administrators for progress follow-up. This is sample data for the Milestone 2 demo.</div>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="outline-secondary" onClick={onHide} disabled={busy}>Cancel</Button>
-          <Button type="submit" variant="primary" disabled={busy || !rating}>
+          <Button type="submit" variant="primary" disabled={busy || comments.trim().length < 10}>
             {busy && <Spinner animation="border" size="sm" className="me-2" />}
-            Submit feedback
+            Submit review
           </Button>
         </Modal.Footer>
       </Form>

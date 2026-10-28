@@ -220,7 +220,7 @@ export function createDemoService(store = createDemoStore()) {
         && (params.accepting === false || row.accepting_mentees));
       if (['experience', 'experience_desc'].includes(params.sort)) rows.sort((a, b) => b.experience_years - a.experience_years);
       if (params.sort === 'name') rows.sort((a, b) => a.full_name.localeCompare(b.full_name));
-      if (params.sort === 'rating_desc') rows.sort((a, b) => (b.rating?.average || 0) - (a.rating?.average || 0));
+      if (params.sort === 'rating_desc' || params.sort === 'reviews_desc') rows.sort((a, b) => (b.review_count || 0) - (a.review_count || 0));
       return list(rows, params);
     }
 
@@ -322,11 +322,10 @@ export function createDemoService(store = createDemoStore()) {
       if (action === 'feedback' && method === 'GET') return list(d.feedback.filter((item) => item.session_id === id).map(v.feedback), params);
       if (action === 'feedback' && method === 'POST') {
         editable(row, viewer);
-        if (row.status !== 'completed' || Date.parse(store.now()) > Date.parse(row.scheduled_end) + 14 * 86400000) fail('FEEDBACK_NOT_ALLOWED', 'Rate a completed sample session within 14 days.');
-        if (!Number.isInteger(body.rating) || body.rating < 1 || body.rating > 5) invalid('rating', 'Choose a whole number from 1 to 5.');
-        if (body.comments) length(body.comments, 'comments', 0, 1000);
-        if (d.feedback.some((item) => item.session_id === id && item.submitted_by === viewer.user_id)) fail('FEEDBACK_ALREADY_SUBMITTED', 'You have already rated this sample session.');
-        const item = { feedback_id: store.id('feedback'), session_id: id, submitted_by: viewer.user_id, rating: body.rating, comments: body.comments || null, created_at: store.now() };
+        if (row.status !== 'completed' || Date.parse(store.now()) > Date.parse(row.scheduled_end) + 14 * 86400000) fail('FEEDBACK_NOT_ALLOWED', 'Review a completed sample session within 14 days.');
+        length((body.comments || '').trim(), 'comments', 10, 1000);
+        if (d.feedback.some((item) => item.session_id === id && item.submitted_by === viewer.user_id)) fail('FEEDBACK_ALREADY_SUBMITTED', 'You have already reviewed this sample session.');
+        const item = { feedback_id: store.id('feedback'), session_id: id, submitted_by: viewer.user_id, comments: body.comments.trim(), created_at: store.now() };
         d.feedback.push(item); return ok(v.feedback(item));
       }
     }
@@ -400,10 +399,10 @@ export function createDemoService(store = createDemoStore()) {
     const fields = { requests: ['request_id', 'student_id', 'mentor_id', 'status', 'created_at'],
       mentorships: ['mentorship_id', 'student_id', 'mentor_id', 'status', 'started_at'],
       sessions: ['session_id', 'mentorship_id', 'scheduled_start', 'status'],
-      participation: ['mentor_id', 'active_mentees', 'sessions_completed', 'average_rating'] };
+      participation: ['mentor_id', 'active_mentees', 'sessions_completed', 'review_count'] };
     const keys = fields[params.report]; if (!keys) invalid('report', 'Choose an existing demo report.');
     const source = params.report === 'participation' ? d.mentors.map((row) => ({ mentor_id: row.mentor_id, active_mentees: v.countActive(row.mentor_id),
-      sessions_completed: d.sessions.filter((item) => item.mentor_id === row.mentor_id && item.status === 'completed').length, average_rating: v.rating(row.mentor_id)?.average ?? '' }))
+      sessions_completed: d.sessions.filter((item) => item.mentor_id === row.mentor_id && item.status === 'completed').length, review_count: v.reviewCount(row.mentor_id) }))
       : d[{ requests: 'requests', mentorships: 'mentorships', sessions: 'sessions' }[params.report]].filter((row) => (!params.from || row.created_at >= params.from) && (!params.to || row.created_at < `${params.to}T23:59:59.999Z`));
     const escape = (value) => `"${String(value ?? '').replace(/"/g, '""')}"`;
     audit('demo.csv.exported', 'report', params.report);

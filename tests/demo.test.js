@@ -131,11 +131,11 @@ test('mentor completes a started session and participants can rate once with ref
   const { req, login } = setup(); await login('mentor');
   assert.equal((await req('PATCH', '/sessions/session-ready', { status: 'completed' })).data.status, 'completed');
   await login();
-  await req('POST', '/sessions/session-rateable/feedback', { rating: 4, comments: 'Sample feedback.' });
-  await rejectsCode(req('POST', '/sessions/session-rateable/feedback', { rating: 4 }), 'FEEDBACK_ALREADY_SUBMITTED');
+  await req('POST', '/sessions/session-rateable/feedback', { comments: 'The mentor helped me plan two concrete portfolio improvements.' });
+  await rejectsCode(req('POST', '/sessions/session-rateable/feedback', { comments: 'Another written review attempt.' }), 'FEEDBACK_ALREADY_SUBMITTED');
   assert.equal((await req('GET', '/sessions/session-rateable')).data.my_feedback_submitted, true);
-  assert.equal((await req('GET', '/sessions/session-rateable/feedback')).data[0].rating, 4);
-  assert.equal((await req('GET', '/mentors/mentor-demo')).data.rating.average, 4.5);
+  assert.match((await req('GET', '/sessions/session-rateable/feedback')).data[0].comments, /portfolio improvements/);
+  assert.equal((await req('GET', '/mentors/mentor-demo')).data.review_count, 2);
 });
 
 test('closing a mentorship cancels future sessions and prevents further booking', async () => {

@@ -120,7 +120,7 @@ frontend can inspect/edit its data.
 | Requests | Submit/cancel, mentor accept/decline, mentorship creation, pending/capacity/duplicate checks and a demo 14-day decline cooldown. |
 | Availability | Add/edit/delete individual slots and a local weekly recurrence helper; reject overlaps and changes to booked slots. Recurrence uses this browser's local time zone. |
 | Sessions | Slot booking, mentor custom-time booking, shared notes, cancellation, completion after start and conflict checks. |
-| Feedback | One rating per participant per completed session within the demo 14-day window, local comments and recalculated ratings. |
+| Feedback | One required written review per participant per completed session within the demo 14-day window. Admin analytics can display recent student review text and review counts. |
 | Notifications | Local records, read/unread state and badge counts only. No delivery, email, push or real-time transport. |
 | Administration | Local approval/rejection/suspension, user status changes, catalogue edits and sample audit records. No actual alumni verification. |
 | Analytics and export | Counts/charts derived from local records, date filtering and CSV created in the browser. |
