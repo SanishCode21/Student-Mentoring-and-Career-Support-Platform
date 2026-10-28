@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="IITM Mentoring Platform">
+  <rect width="64" height="64" rx="14" fill="#1F3A5F" />
+  <path d="M15 45l11-12 8 7 14-17" fill="none" stroke="#2A7F8E" stroke-width="6"
+        stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="48" cy="23" r="5" fill="#ffffff" />
+</svg>
